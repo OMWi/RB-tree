@@ -65,6 +65,33 @@ void Tree::recolor(Node* node) {
         node->color = Color::Black;
 }
 
+Node* Tree::max(Node* node) {
+    while (node->right) {
+        node = node->right;
+    }
+    return node;
+}
+
+Node* Tree::min(Node* node) {
+    while (node->left) {
+        node = node->left;
+    }
+    return node;
+}
+
+Node* Tree::successor(Node* x) {
+    if (x->right) {
+        return min(x->right);
+    } 
+    Node* y = x->parent;
+    while (y != nullptr && x == y->right) {
+        x = y;
+        y = y->parent;
+    }
+    return y;
+}
+
+
 void Tree::insert(int key) {
     Node* parent = nullptr, *current = root;
     while (current) {
@@ -134,6 +161,41 @@ void Tree::insertFix(Node* x) {
 }
 
 
+void Tree::remove(int key) {
+    Node* child = bstRemove(root, key);
+    return;
+}
+
+Node* Tree::bstRemove(Node* node, int key) {
+    if (node == nullptr) return root;
+
+    if (key < node->key) 
+        node->left = bstRemove(node->left, key);
+    else if (key > node->key)
+        node->right = bstRemove(node->right, key);
+    else {
+        if (node->left == nullptr) {
+            Node* temp = node->right;
+            delete(node);
+            return temp;
+        }
+        else if (node->right == nullptr) {
+            Node* temp = node->left;
+            delete node;
+            return temp;
+        }
+
+        Node* temp = min(node->right);
+        node->key = temp->key;
+        node->right = bstRemove(node->right, temp->key);
+    }
+    return node;
+}
+
+void Tree::removeFix(Node* node) {
+
+}
+
 
 
 
@@ -146,4 +208,3 @@ Node* Tree::search(Node* current, int key) {
     if (key > current->key) return search(current->right, key);
     else if (key < current->key) return search(current->left, key);
 }
-
