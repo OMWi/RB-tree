@@ -17,6 +17,18 @@ Node* Node::uncle() {
         return grand->left;
 }
 
+Node* Node::sibling() {
+    if (parent == nullptr) 
+        return nullptr;
+    if (this == parent->left)
+        return parent->right;
+    return parent->left;
+}
+
+bool Node::hasRedChild() {
+    return (left != nullptr && left->color == Red) 
+        || (right != nullptr && right->color == Red);
+}
 
 void Tree::rotateLeft(Node* node) {
     Node* pivot = node->right;
@@ -91,6 +103,21 @@ Node* Tree::successor(Node* x) {
     return y;
 }
 
+void Tree::replace(Node* oldNode, Node* newNode) {
+    if (oldNode->parent == nullptr) {
+        root = newNode;
+    }
+    else {
+        if (oldNode == oldNode->parent->left) 
+            oldNode->parent->left = newNode;
+        else 
+            oldNode->parent->right = newNode;
+    }
+    if (newNode != nullptr) {
+        newNode->parent = oldNode->parent;
+    }
+}
+
 
 void Tree::insert(int key) {
     Node* parent = nullptr, *current = root;
@@ -160,43 +187,142 @@ void Tree::insertFix(Node* x) {
     }
 }
 
-
 void Tree::remove(int key) {
-    Node* child = bstRemove(root, key);
-    return;
+    remove(search(key));
 }
 
-Node* Tree::bstRemove(Node* node, int key) {
-    if (node == nullptr) return root;
+Node* Tree::BSTreplace(Node* x) {
+    if (x->left != nullptr && x->right != nullptr)
+        return successor(x->right);
+    if (x->left == nullptr && x->right == nullptr)
+        return nullptr;
+    if (x->left != nullptr) 
+        return x->left;
+    else
+        return x->right;
+}
 
-    if (key < node->key) 
-        node->left = bstRemove(node->left, key);
-    else if (key > node->key)
-        node->right = bstRemove(node->right, key);
-    else {
-        if (node->left == nullptr) {
-            Node* temp = node->right;
-            delete(node);
-            return temp;
-        }
-        else if (node->right == nullptr) {
-            Node* temp = node->left;
-            delete node;
-            return temp;
-        }
+void Tree::remove(Node* v) {
+    Node* u = BSTreplace(v);
+    bool uvBlack = ((!u || u->color == Black) && (v->color == Black));
+    Node* parent = v->parent;
 
-        Node* temp = min(node->right);
-        node->key = temp->key;
-        node->right = bstRemove(node->right, temp->key);
+    if (u == nullptr) {
+        if (v == root) {
+            root = nullptr;
+        }
+        else {
+            if (uvBlack) {
+                removeFix(v);
+            }
+            else {
+                if (v->sibling() != nullptr) 
+                    v->sibling()->color = Red;
+            }
+        }
+        if (v == v->parent->left)
+            parent->left = nullptr;
+        else 
+            parent->right = nullptr;
+        delete v;
+        return;
     }
-    return node;
+
+    if (v->left == nullptr || v->right == nullptr) {
+        if (v == root) {
+            v->key = u->key;
+            v->left = v->right = nullptr;
+            delete u;
+        }
+        else {
+            if (v == v->parent->left) {
+                parent->left = u;
+            }
+            else {
+                parent->right = u;
+            }
+            delete v;
+            u->parent = parent;
+            if (uvBlack) {
+                removeFix(u);
+            }
+            else {
+                u->color = Black;
+            }
+        }
+    }
+
+
+    int temp = u->key;
+    u->key = v->key;
+    v->key = temp;
+    remove(u);
 }
 
-void Tree::removeFix(Node* node) {
-
+void Tree::removeFix(Node* x) {
+    if (x == root)
+        // Reached root
+        return;
+ 
+    Node *sibling = x->sibling(), *parent = x->parent;
+    if (sibling == NULL) {
+        // No sibiling, double black pushed up
+        removeFix(parent);
+    } 
+    else {
+        if (sibling->color == Red) {
+            // Sibling red
+            parent->color = Red;
+        sibling->color = Black;
+        if (sibling == sibling->parent->left) {
+          // left case
+          rotateRight(parent);
+        } else {
+          // right case
+          rotateLeft(parent);
+        }
+        removeFix(x);
+      } else {
+        // Sibling black
+        if (sibling->hasRedChild()) {
+          // at least 1 red children
+          if (sibling->left != NULL and sibling->left->color == Red) {
+            if (sibling == sibling->parent->left) {
+              // left left
+              sibling->left->color = sibling->color;
+              sibling->color = parent->color;
+              rotateRight(parent);
+            } else {
+              // right left
+              sibling->left->color = parent->color;
+              rotateRight(sibling);
+              rotateLeft(parent);
+            }
+          } else {
+            if (sibling == sibling->parent->left) {
+              // left right
+              sibling->right->color = parent->color;
+              rotateLeft(sibling);
+              rotateRight(parent);
+            } else {
+              // right right
+              sibling->right->color = sibling->color;
+              sibling->color = parent->color;
+              rotateLeft(parent);
+            }
+          }
+          parent->color = Black;
+        } else {
+          // 2 black children
+          sibling->color = Red;
+          if (parent->color == Black)
+            removeFix(parent);
+          else
+            parent->color = Black;
+        }
+      }
+    }
 }
-
-
 
 
 Node* Tree::search(int key) {
@@ -208,3 +334,4 @@ Node* Tree::search(Node* current, int key) {
     if (key > current->key) return search(current->right, key);
     else if (key < current->key) return search(current->left, key);
 }
+
