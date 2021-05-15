@@ -15,24 +15,28 @@ struct Node {
 };
 
 class Tree {    
-    Node* root;
-    Node* search(Node* current, int key);
+    //Node* root;    
     void rotateLeft(Node* node);
     void rotateRight(Node* node); 
     void recolor(Node* node);
-    void replace(Node* oldNode, Node* newNode);
+
+    void insertFix(Node* newNode); 
     Node* max(Node* node);
     Node* min(Node* node);
-    Node* successor(Node* node);
-    void insertFix(Node* newNode); 
-    Node* BSTreplace(Node* node);
-    void removeFix(Node* node);
-    void remove(Node* node);
+    //void replace(Node* oldNode, Node* newNode);
+    
+    //Node* successor(Node* node);
+    
+    //Node* BSTreplace(Node* node);
+    //void removeFix(Node* node);
+    //void remove(Node* node);
+    Node* search(Node* current, int key);
 public:
+    Node* root;
     Tree() {
         root = nullptr;
     } 
     void insert(int key); 
-    void remove(int key);       
-    Node* search(int key); 
+    //void remove(int key);       
+    //Node* search(int key); 
 };

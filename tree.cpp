@@ -25,11 +25,12 @@ Node* Node::sibling() {
     return parent->left;
 }
 
+/*
 bool Node::hasRedChild() {
     return (left != nullptr && left->color == Red) 
         || (right != nullptr && right->color == Red);
 }
-
+*/
 void Tree::rotateLeft(Node* node) {
     Node* pivot = node->right;
 
@@ -90,9 +91,9 @@ Node* Tree::min(Node* node) {
     }
     return node;
 }
-
+/*
 Node* Tree::successor(Node* x) {
-    if (x->right) {
+    if (x->right != nullptr) {
         return min(x->right);
     } 
     Node* y = x->parent;
@@ -102,22 +103,7 @@ Node* Tree::successor(Node* x) {
     }
     return y;
 }
-
-void Tree::replace(Node* oldNode, Node* newNode) {
-    if (oldNode->parent == nullptr) {
-        root = newNode;
-    }
-    else {
-        if (oldNode == oldNode->parent->left) 
-            oldNode->parent->left = newNode;
-        else 
-            oldNode->parent->right = newNode;
-    }
-    if (newNode != nullptr) {
-        newNode->parent = oldNode->parent;
-    }
-}
-
+*/
 
 void Tree::insert(int key) {
     Node* parent = nullptr, *current = root;
@@ -151,11 +137,13 @@ void Tree::insert(int key) {
         insertFix(current); 
 }
 
-void Tree::insertFix(Node* x) {
+void Tree::insertFix(Node* x) {    
     if (x == root) {
         x->color = Black;
         return;
     }
+    if (!(x->color == Red && x->parent->color == Red))
+        return;
     if (!x->uncle() || x->uncle()->color == Black) {
         Node* p = x->parent;
         Node* g = x->grandparent();
@@ -186,6 +174,30 @@ void Tree::insertFix(Node* x) {
         insertFix(g);        
     }
 }
+
+
+
+
+
+
+/*
+void Tree::replace(Node* oldNode, Node* newNode) {
+    if (oldNode->parent == nullptr) {
+        root = newNode;
+    }
+    else {
+        if (oldNode == oldNode->parent->left) 
+            oldNode->parent->left = newNode;
+        else 
+            oldNode->parent->right = newNode;
+    }
+    if (newNode != nullptr) {
+        newNode->parent = oldNode->parent;
+    }
+}
+
+
+
 
 void Tree::remove(int key) {
     remove(search(key));
@@ -335,3 +347,4 @@ Node* Tree::search(Node* current, int key) {
     else if (key < current->key) return search(current->left, key);
 }
 
+*/
