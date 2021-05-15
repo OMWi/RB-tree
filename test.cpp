@@ -20,14 +20,14 @@ int main() {
     while (true) {
         int key;
         cin >> key;
-        if (key < 0) break;
-        tree->insert(key);
+        if (key < 0)
+            tree->remove(-key);
+        else
+            tree->insert(key);
+
         cout << "Tree:" << endl;
         print(tree->root);
         cout << endl;
     }
-
-    print(tree->root);
-
     return 0;
 }

@@ -19,24 +19,20 @@ class Tree {
     void rotateLeft(Node* node);
     void rotateRight(Node* node); 
     void recolor(Node* node);
-
-    void insertFix(Node* newNode); 
     Node* max(Node* node);
-    Node* min(Node* node);
-    //void replace(Node* oldNode, Node* newNode);
-    
-    //Node* successor(Node* node);
-    
-    //Node* BSTreplace(Node* node);
-    //void removeFix(Node* node);
-    //void remove(Node* node);
+    Node* min(Node* node);    
+    Node* successor(Node* node);
+
     Node* search(Node* current, int key);
+    void insertFix(Node* newNode); 
+    void removeFix(Node* parent, Node* child);
+    
 public:
     Node* root;
     Tree() {
         root = nullptr;
     } 
+    Node* search(int key);
     void insert(int key); 
-    //void remove(int key);       
-    //Node* search(int key); 
+    void remove(int key);     
 };
