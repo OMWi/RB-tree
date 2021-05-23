@@ -25,12 +25,6 @@ Node* Node::sibling() {
     return parent->left;
 }
 
-/*
-bool Node::hasRedChild() {
-    return (left != nullptr && left->color == Red) 
-        || (right != nullptr && right->color == Red);
-}
-*/
 void Tree::rotateLeft(Node* node) {
     Node* pivot = node->right;
 
@@ -57,7 +51,7 @@ void Tree::rotateRight(Node* node) {
     pivot->parent = node->parent;
 
     if (node->parent != nullptr) {
-        if (node->parent->left == pivot)
+        if (node->parent->left == node)
             node->parent->left = pivot;
         else
             node->parent->right = pivot;
@@ -79,6 +73,7 @@ void Tree::recolor(Node* node) {
 }
 
 Node* Tree::max(Node* node) {
+    if (!node) return node;
     while (node->right) {
         node = node->right;
     }
@@ -86,20 +81,21 @@ Node* Tree::max(Node* node) {
 }
 
 Node* Tree::min(Node* node) {
+    if (!node) return node;
     while (node->left) {
         node = node->left;
     }
     return node;
 }
 
-Node* Tree::search(int key) {
-    return search(root, key);
+Node* Tree::search(int value) {
+    return search(root, value);
 }
 
-Node* Tree::search(Node* current, int key) {
-    if (!current || current->key == key) return current;
-    if (key > current->key) return search(current->right, key);
-    else if (key < current->key) return search(current->left, key);
+Node* Tree::search(Node* current, int value) {
+    if (!current || current->value == value) return current;
+    if (value > current->value) return search(current->right, value);
+    else if (value < current->value) return search(current->left, value);
 }
 
 Node* Tree::successor(Node* x) {
@@ -115,22 +111,22 @@ Node* Tree::successor(Node* x) {
 }
 
 
-void Tree::insert(int key) {
+void Tree::insert(int value) {
     Node* parent = nullptr, *current = root;
     while (current) {
         parent = current;
-        if (key > current->key) {
+        if (value >= current->value) {
             current = current->right;
         }
-        else if (key < current->key) {
+        else if (value < current->value) {
             current = current->left;
         }
     }
-    Node* newNode = new Node(key);
+    Node* newNode = new Node(value);
     current = newNode;
     current->parent = parent;
     if (parent) {
-        if (current->key < parent->key) {
+        if (current->value < parent->value) {
             parent->left = current;
         }
         else {
@@ -185,20 +181,25 @@ void Tree::insertFix(Node* x) {
     }
 }
 
-void Tree::remove(int key) {
-    Node* x = search(key);
-    if (!x) return;   
+void Tree::remove(int value) {
+    Node* x = search(value);
+    if (!x) return;  
 
     if (x->left && x->right) {
         //internal node
         Node* pred = max(x->left);
-        x->key = pred->key;
+        x->value = pred->value;
         x = pred;
     }
     Node* parent = x->parent;
     Node* child = nullptr;
     if (x->left == nullptr && x->right == nullptr) {
         //leaf
+        if (x == root) {
+            root = nullptr;
+            delete x;
+            return;
+        }
         if (x == x->parent->right) 
             x->parent->right = nullptr;
         else
@@ -216,10 +217,16 @@ void Tree::remove(int key) {
         else
             child = x->right;
         child->parent = x->parent;
-        if (x == x->parent->right)
-            x->parent->right = child;
-        else
-            x->parent->left = child;
+        if (x->parent) {
+            if (x == x->parent->right)
+                x->parent->right = child;
+            else
+                x->parent->left = child;
+        }
+        else {
+            if (x->left) root = x->left;
+            else root = x->right;
+        }
         child->color = Black;    
         delete x;
         return;        
@@ -247,20 +254,30 @@ void Tree::removeFix(Node* parent, Node* child) {
         if ((s->left && s->left->color == Red) || (s->right && s->right->color == Red)) {
             //has red children
             if (s == s->parent->right) {
-                if (s->left) {
-                    //RLcase
-                    rotateRight(s);
+                if (s->right && s->right->color == Red) {
+                    //RRcase
+                    recolor(s->right);
+                    rotateLeft(parent);
                 }
-                //RRcase
-                rotateLeft(parent);
+                else {
+                    //RLcase
+                    recolor(s->left);
+                    rotateRight(s);
+                    rotateLeft(parent);
+                }
             }
             else {
-                if (s->right) {
-                    //LRcase
-                    rotateLeft(s);
+                if (s->left && s->left->color == Red) {
+                    //LLcase
+                    recolor(s->left);
+                    rotateRight(parent);
                 }
-                //LLcase
-                rotateRight(parent);
+                else {
+                    //LRcase
+                    recolor(s->right);
+                    rotateLeft(s);
+                    rotateRight(parent);
+                }
             }
         }
         else {
@@ -271,6 +288,7 @@ void Tree::removeFix(Node* parent, Node* child) {
             else
                 removeFix(parent->parent, parent);
         }
+        if (root->parent) root = root->parent;
     }
     else {
         //red sibling
@@ -284,5 +302,8 @@ void Tree::removeFix(Node* parent, Node* child) {
         }
         recolor(parent);
         recolor(s);
+        if (root->parent) root = root->parent;
+        removeFix(parent, child);
     }
 }
+
